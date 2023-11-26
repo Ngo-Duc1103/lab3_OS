@@ -2,33 +2,37 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <signal.h>
 #define MAX_LOG_LENGTH 10
 #define MAX_BUFFER_SLOT 6
 #define MAX_LOOPS 30
 
 char logbuf[MAX_BUFFER_SLOT][MAX_LOG_LENGTH];
-
+pthread_mutex_t mtx;
 int count;
+
 void flushlog();
 
-struct _args
-{
-   unsigned int interval;
-};
 
 void *wrlog(void *data)
 {
    char str[MAX_LOG_LENGTH];
    int id = *(int*) data;
-
-   usleep(20);
    sprintf(str, "%d", id);
-   strcpy(logbuf[count], str);
-   count = (count > MAX_BUFFER_SLOT)? count :(count + 1); /* Only increase count to size MAX_BUFFER_SLOT*/
-   printf("wrlog(): %d \n", id);
+   sleep(1);
+   pthread_mutex_lock(&mtx);
 
-   return 0;
+   strcpy(logbuf[count], str);
+   
+   
+   if (count == MAX_BUFFER_SLOT) raise(SIGUSR1);
+   else count++;
+
+   pthread_mutex_unlock(&mtx);
+
+   //printf("wrlog(): %d \n", id);
+
+   pthread_exit(NULL);
 }
 
 void flushlog()
@@ -36,7 +40,7 @@ void flushlog()
    int i;
    char nullval[MAX_LOG_LENGTH];
 
-   printf("flushlog()\n");
+   //printf("flushlog()\n");
    sprintf(nullval, "%d", -1);
    for (i = 0; i < count; i++)
    {
@@ -48,19 +52,13 @@ void flushlog()
 
    /*Reset buffer */
    count = 0;
-
    return;
-
 }
 
-void *timer_start(void *args)
-{
-   while (1)
-   {
-      flushlog();
-      /*Waiting until the next timeout */
-      usleep(((struct _args *) args)->interval);
-   }
+void signalHandler(int signalNum) {
+  if (signalNum == SIGUSR1) {
+   flushlog();
+  }
 }
 
 int main()
@@ -71,12 +69,10 @@ int main()
    pthread_t lgrid;
    int id[MAX_LOOPS];
 
-   struct _args args;
-   args.interval = 500e3;
-   /*500 msec ~ 500 * 1000 usec */
+   pthread_mutex_init(&mtx, NULL);
 
-   /*Setup periodically invoke flushlog() */
-   pthread_create(&lgrid, NULL, &timer_start, (void*) &args);
+   // Use SIGUSR1 to handle flushlog predically
+   signal(SIGUSR1, signalHandler);
 
    /*Asynchronous invoke task writelog */
    for (i = 0; i < MAX_LOOPS; i++)
@@ -90,5 +86,6 @@ int main()
 
    sleep(5);
 
+   pthread_mutex_destroy(&mtx);
    return 0;
 }

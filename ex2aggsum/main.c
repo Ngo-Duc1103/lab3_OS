@@ -37,7 +37,7 @@ extern int generate_array_data (int* buf, int arraysize, int seednum);
 /** display help */
 extern void help (int xcode);
 
-void* sum_worker (struct _range* idx_range);
+void sum_worker (struct _range* idx_range);
 long validate_sum(int arraysize);
 
 /* Global sum buffer */
@@ -46,14 +46,18 @@ int* shrdarrbuf;
 
 pthread_mutex_t mtx;
 
-void* sum_worker(struct _range* idx_range) {
-   int i;
-   
-   //printf("In worker from %d to %d\n", idx_range.start, idx_range.end);
-   
+void sum_worker(struct _range* idx_range) {
+   int i, j;
+  
+   long sum = 0;
    // TODO: implement multi-thread sum-worker
-
-   return 0;
+   for (i = idx_range->start, j = idx_range->end; i <= j; i++) {
+      sum += shrdarrbuf[i];
+   }
+   pthread_mutex_lock(&mtx);
+   sumbuf += sum;
+   pthread_mutex_unlock(&mtx);
+   pthread_exit(NULL);
 		
 }
 
@@ -131,7 +135,7 @@ int main(int argc, char * argv[]) {
 	
    printf("%s gives sum result %ld\n", PACKAGE, sumbuf);
 
-   waitpid(pid, NULL, NULL);
+   waitpid(pid, NULL, 0);
       exit(0);
 }
 

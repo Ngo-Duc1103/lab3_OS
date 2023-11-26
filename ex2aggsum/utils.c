@@ -32,11 +32,11 @@ int validate_and_split_argarray(int arraysize, int num_thread,
 	   thread_idx_range[i].end = ((i + 1)*n - 1 < arraysize) ? (i + 1)*n - 1 : arraysize - 1;
    }
 
-   fprintf(stderr,"\n");
-   for (i = 0; i < num_thread; i++) {
-       fprintf(stderr,"[%d,%d]\t",thread_idx_range[i].start, thread_idx_range[i].end);
-   }
-   fprintf(stderr,"\n");
+  //  fprintf(stderr,"\n");
+  //  for (i = 0; i < num_thread; i++) {
+  //      fprintf(stderr,"[%d,%d]\t",thread_idx_range[i].start, thread_idx_range[i].end);
+  //  }
+  //  fprintf(stderr,"\n");
    
    return 0;
 }
@@ -52,13 +52,13 @@ int generate_array_data(int* buf, int arraysize, int seednum) {
 	for (i = 0; i < arraysize; i++)
 		buf[i] = rand() % (UPBND_DATA_VAL - LWBND_DATA_VAL + 1) + LWBND_DATA_VAL;
 	
-   fprintf(stderr,"\n[");
-   fflush(stderr);
-   for (i = 0; i < arraysize; i++) {
-       fprintf(stderr,"%3d, \t",buf[i]);
-   }
-   fflush(stderr);
-   fprintf(stderr,"]\n");	
+  //  fprintf(stderr,"\n[");
+  //  fflush(stderr);
+  //  for (i = 0; i < arraysize; i++) {
+  //      fprintf(stderr,"%3d, \t",buf[i]);
+  //  }
+  //  fflush(stderr);
+  //  fprintf(stderr,"]\n");	
 }
 
 

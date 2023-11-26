@@ -1,4 +1,3 @@
-
 #define PACKAGE "aggsum"
 #define VERSION "0.01"
 
